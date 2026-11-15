@@ -13,7 +13,7 @@
 				(at 0 -16.51 0)
 				(effects (font (size 1.27 1.27)))
 			)
-			(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x08_P2.54mm_Vertical"
+			(property "Footprint" "smart_lamp:ESP32-C3-SuperMini"
 				(at 0 -19.05 0)
 				(hide yes)
 				(effects (font (size 1.27 1.27)))

@@ -1,0 +1,9 @@
+(fp_lib_table
+	(lib
+		(name "smart_lamp")
+		(type "KiCad")
+		(uri "${KIPRJMOD}/smart_lamp.pretty")
+		(options "")
+		(descr "Smart Bed Lamp Footprints")
+	)
+)

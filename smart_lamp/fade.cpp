@@ -3,8 +3,10 @@
 #include <Arduino.h>
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include "config.h"
 #include "led.h"
+#include "settings.h"
 
 // In C++, wrapping variables in an unnamed namespace makes them private to this
 // file, exactly like prefixing variables with an underscore in Python modules.
@@ -53,10 +55,17 @@ float clamp01(float value) {
 // ---------------------------------------------------------------------------
 
 /**
- * Parse and execute the test command: "f <warm> <cool> <ms>"
- * Example input: "f 1.0 0.0 5000" -> fades to warm=1.0, cool=0.0 over 5 s.
+ * Parse and execute test commands:
+ *   "f <warm> <cool> <ms>" -> fades to targets over duration
+ *   "factory"              -> clears flash settings and loads defaults (Step 6)
  */
 void handleFadeTestCommand(const char* cmd) {
+  // Check for Step 6 "factory" reset command
+  if (strcmp(cmd, "factory") == 0 || strncmp(cmd, "factory", 7) == 0) {
+    settings_factory_reset();
+    return;
+  }
+
   float targetWarm = 0.0f;
   float targetCool = 0.0f;
   unsigned long duration = 0;
@@ -67,7 +76,7 @@ void handleFadeTestCommand(const char* cmd) {
   if (matched == 3) {
     fade_to(targetWarm, targetCool, static_cast<uint32_t>(duration));
   } else {
-    Serial.println("[fade] usage: f <warm 0..1> <cool 0..1> <ms>");
+    Serial.println("[fade] usage: f <warm 0..1> <cool 0..1> <ms> | factory");
   }
 }
 

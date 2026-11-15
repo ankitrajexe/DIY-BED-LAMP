@@ -4,6 +4,7 @@
 #include <math.h>
 #include "config.h"
 #include "fade.h"
+#include "settings.h"
 #include "touch.h"
 
 // In C++, the unnamed namespace keeps module state private to this file
@@ -131,17 +132,49 @@ void applyTarget(uint32_t fadeDurationMs) {
   fade_to(targetWarm, targetCool, fadeDurationMs);
 }
 
+/**
+ * Synchronize current lamp state into Settings and mark flash dirty.
+ */
+void syncSettings() {
+  Settings& cfg = settings_get_mutable();
+  cfg.lamp_on = s_isOn;
+  cfg.level_index = s_levelIndex;
+  // If in night mode, preserve the user's base preset so exiting night mode restores it
+  cfg.preset = s_nightMode ? s_prevPreset : s_preset;
+  cfg.night_mode = s_nightMode;
+  settings_mark_dirty();
+}
+
 }  // namespace
 
 void lamp_init() {
-  s_isOn = false;
-  s_levelIndex = BRIGHTNESS_DEFAULT_LEVEL_INDEX;
-  s_preset = LampPreset::NEUTRAL;
-  s_prevPreset = LampPreset::NEUTRAL;
-  s_nightMode = false;
+  // Step 6: Load persistent settings from flash
+  const Settings& cfg = settings_get();
 
-  // Start with LEDs completely off
-  fade_to(0.0f, 0.0f, 0);
+  s_levelIndex = cfg.level_index;
+  s_preset = cfg.preset;
+  s_prevPreset = cfg.preset;
+  s_nightMode = cfg.night_mode;
+
+  // If night mode was stored, enforce the warm preset mix
+  if (s_nightMode) {
+    s_preset = LampPreset::WARM;
+  }
+
+  // Restore power state depending on config.h setting
+  if (RESTORE_POWER_STATE != 0) {
+    s_isOn = cfg.lamp_on;
+  } else {
+    s_isOn = false;
+  }
+
+  if (s_isOn) {
+    // Restored lamp is ON at boot: fade up smoothly over BOOT_FADE_MS, no sudden jump
+    applyTarget(BOOT_FADE_MS);
+  } else {
+    // Start completely dark
+    fade_to(0.0f, 0.0f, 0);
+  }
 
   Serial.println("[lamp] init");
   printState();
@@ -159,6 +192,7 @@ void lamp_update() {
       // Toggle ON/OFF
       s_isOn = !s_isOn;
       applyTarget(FADE_MS_USER);
+      syncSettings();
       printState();
       break;
     }
@@ -171,6 +205,7 @@ void lamp_update() {
       // Cycle brightness levels: 25% -> 50% -> 75% -> 100% -> 25%...
       s_levelIndex = (s_levelIndex + 1) % BRIGHTNESS_LEVEL_COUNT;
       applyTarget(FADE_MS_USER);
+      syncSettings();
       printState();
       break;
     }
@@ -189,6 +224,7 @@ void lamp_update() {
         s_preset = LampPreset::WARM;
       }
       applyTarget(FADE_MS_USER);
+      syncSettings();
       printState();
       break;
     }
@@ -206,6 +242,7 @@ void lamp_update() {
       if (s_isOn) {
         applyTarget(FADE_MS_NIGHT);
       }
+      syncSettings();
       printState();
       break;
     }

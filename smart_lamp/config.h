@@ -52,6 +52,12 @@ constexpr ColorPresetMix PRESET_WARM    = {1.0f, 0.0f};
 constexpr ColorPresetMix PRESET_NEUTRAL = {0.6f, 0.6f};
 constexpr ColorPresetMix PRESET_COOL    = {0.0f, 1.0f};
 
+// Settings and persistence (Step 6)
+constexpr uint16_t SETTINGS_VERSION         = 1;     // Settings schema version stored in flash
+constexpr uint32_t SETTINGS_SAVE_DELAY_MS   = 5000;  // 5 s delay after last change before flash write
+constexpr uint8_t  RESTORE_POWER_STATE      = 1;     // 1 = restore lamp ON/OFF at boot; 0 = start OFF
+constexpr uint32_t BOOT_FADE_MS             = 800;   // Smooth fade-in if restored lamp is ON at boot
+
 // GPIO pin assignments (ESP32-C3 SuperMini)
 // Never use GPIO8 and GPIO9 (strapping pins).
 constexpr uint8_t LED_WARM_PIN = 0;  // GPIO0: warm channel MOSFET gate (PWM)

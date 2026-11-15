@@ -7,6 +7,7 @@
 #include "led.h"
 #include "light.h"
 #include "rtc.h"
+#include "settings.h"
 #include "storage.h"
 #include "touch.h"
 
@@ -23,6 +24,7 @@ void app_init() {
     }
   }
 
+  settings_init();
   storage_init();
   led_init();
   fade_init();
@@ -48,6 +50,7 @@ void loop() {
   lamp_update();
   fade_update();
   display_update();
+  settings_update();
   storage_update();
   led_update();
 }

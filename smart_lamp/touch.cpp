@@ -1,6 +1,7 @@
 #include "touch.h"
 
 #include <Arduino.h>
+#include "activity.h"
 #include "config.h"
 
 // In C++, the unnamed namespace keeps these variables private to this file
@@ -111,6 +112,8 @@ void touch_update() {
 
       if (s_debouncedState) {
         // --- Pad PRESSED (LOW -> HIGH) ---
+        // Notify activity on raw press edge so OLED wakes immediately without 300ms tap delay
+        activity_notify();
         s_isHeld = true;
         s_pressStartMs = now;
         s_longPressFired = false;

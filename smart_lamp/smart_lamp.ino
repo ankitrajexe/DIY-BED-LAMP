@@ -1,8 +1,10 @@
 #include "config.h"
+#include "activity.h"
 #include "button.h"
 #include "display.h"
 #include "env.h"
 #include "fade.h"
+#include "i2c_bus.h"
 #include "lamp.h"
 #include "led.h"
 #include "light.h"
@@ -24,6 +26,8 @@ void app_init() {
     }
   }
 
+  activity_init();
+  i2c_bus_init();
   settings_init();
   storage_init();
   led_init();

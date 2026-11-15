@@ -42,7 +42,7 @@
 Touch pad (TTP223): single tap = lamp on/off. Double tap = cycle brightness levels (default 4 levels: 25, 50, 75, 100 percent). Triple tap = cycle colour preset warm, neutral, cool. Long press (LONG_PRESS_MS = 800, fires once) = toggle night mode. A single tap is reported only after the tap window closes (300 ms).
 Push button (GPIO6): short press = next OLED page. Long press (1 s) = open settings menu. Double press on the Timer page = start or stop Pomodoro.
 Inside the menu: button short press = next item, touch tap = change value, button long press = save and exit. Auto exit after 30 s with no input.
-Any touch or button press wakes the OLED. The first press only wakes it and does nothing else.
+Any touch or button press wakes the OLED. Touch gestures ALWAYS also do their normal job (a tap while the OLED is asleep still toggles the lamp). Only a press of the page button (Step 9) that finds the display asleep just wakes it and does nothing else.
 
 ## OLED pages (final)
 1. Clock: time large, date and weekday.

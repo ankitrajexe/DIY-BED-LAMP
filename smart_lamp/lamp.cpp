@@ -264,10 +264,22 @@ uint8_t lamp_get_brightness_percent() {
   return BRIGHTNESS_LEVELS[s_levelIndex];
 }
 
+uint8_t lamp_level_percent() {
+  return BRIGHTNESS_LEVELS[s_levelIndex];
+}
+
 LampPreset lamp_get_preset() {
   return s_preset;
 }
 
+const char* lamp_preset_name() {
+  return presetName(s_nightMode ? LampPreset::WARM : s_preset);
+}
+
 bool lamp_is_night_mode() {
+  return s_nightMode;
+}
+
+bool lamp_night_mode() {
   return s_nightMode;
 }

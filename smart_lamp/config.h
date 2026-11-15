@@ -58,6 +58,15 @@ constexpr uint32_t SETTINGS_SAVE_DELAY_MS   = 5000;  // 5 s delay after last cha
 constexpr uint8_t  RESTORE_POWER_STATE      = 1;     // 1 = restore lamp ON/OFF at boot; 0 = start OFF
 constexpr uint32_t BOOT_FADE_MS             = 800;   // Smooth fade-in if restored lamp is ON at boot
 
+// I2C bus settings (Step 7)
+constexpr uint32_t I2C_CLOCK_HZ             = 400000;  // 400 kHz fast mode, set in ONE place only
+
+// OLED display settings (Step 7, SSD1306 128x64 on I2C)
+constexpr uint32_t DISPLAY_REFRESH_MS       = 200;     // 5 Hz max refresh rate (200 ms)
+constexpr uint32_t OLED_SLEEP_MS            = 10000;   // 10 s inactivity timeout before display sleep
+constexpr uint32_t PIXEL_SHIFT_INTERVAL_MS  = 60000;   // 60 s burn-in protection shift interval (lower to test)
+constexpr uint8_t  OLED_CONTRAST_DAY        = 128;     // Daytime display contrast (0..255)
+
 // GPIO pin assignments (ESP32-C3 SuperMini)
 // Never use GPIO8 and GPIO9 (strapping pins).
 constexpr uint8_t LED_WARM_PIN = 0;  // GPIO0: warm channel MOSFET gate (PWM)

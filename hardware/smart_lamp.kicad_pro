@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "filename": "smart_lamp.kicad_pro",
+    "version": 3
+  },
+  "schematic": {
+    "annotate_start_num": 1,
+    "drawing": {
+      "default_line_thickness": 0.15,
+      "default_text_size": 1.27
+    }
+  },
+  "sheets": [
+    [
+      "e3d683c9-521c-4241-a5cf-e7815533eead",
+      ""
+    ]
+  ]
+}

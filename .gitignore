@@ -4,3 +4,11 @@ build/
 *.elf
 *.hex
 *.map
+
+# KiCad local and lock files
+*.kicad_prl
+*.lck
+*-bak
+*.bak
+_autosave-*
+

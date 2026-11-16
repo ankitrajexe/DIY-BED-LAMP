@@ -28,7 +28,8 @@ bool settingsDiffer(const Settings& a, const Settings& b) {
   return (a.lamp_on != b.lamp_on) ||
          (a.level_index != b.level_index) ||
          (a.preset != b.preset) ||
-         (a.night_mode != b.night_mode);
+         (a.night_mode != b.night_mode) ||
+         (a.last_seen_date != b.last_seen_date);
 }
 
 /**
@@ -46,6 +47,7 @@ void writeToFlash() {
   prefs.putUChar("lvl", s_current.level_index);
   prefs.putUChar("pre", static_cast<uint8_t>(s_current.preset));
   prefs.putBool("night", s_current.night_mode);
+  prefs.putUInt("date", s_current.last_seen_date);
   prefs.end();
 
   s_saved = s_current;
@@ -60,6 +62,7 @@ void settings_load_defaults() {
   s_current.level_index = BRIGHTNESS_DEFAULT_LEVEL_INDEX;
   s_current.preset = LampPreset::NEUTRAL;
   s_current.night_mode = false;
+  s_current.last_seen_date = 0;
   s_saved = s_current;
   s_isDirty = false;
 }
@@ -88,6 +91,7 @@ void settings_init() {
   s_current.level_index = prefs.getUChar("lvl", BRIGHTNESS_DEFAULT_LEVEL_INDEX);
   s_current.preset = static_cast<LampPreset>(prefs.getUChar("pre", static_cast<uint8_t>(LampPreset::NEUTRAL)));
   s_current.night_mode = prefs.getBool("night", false);
+  s_current.last_seen_date = prefs.getUInt("date", 0);
   prefs.end();
 
   // Defensive sanity checks on loaded data

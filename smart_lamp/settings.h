@@ -17,10 +17,11 @@
  * Later steps will add more fields (e.g. Pomodoro times, sunrise alarm).
  */
 struct Settings {
-  bool       lamp_on;      // Whether lamp was on when last saved
-  uint8_t    level_index;  // Brightness level index (0..3)
-  LampPreset preset;       // Active colour preset (WARM, NEUTRAL, COOL)
-  bool       night_mode;   // Whether night mode is active
+  bool       lamp_on;         // Whether lamp was on when last saved
+  uint8_t    level_index;     // Brightness level index (0..3)
+  LampPreset preset;          // Active colour preset (WARM, NEUTRAL, COOL)
+  bool       night_mode;      // Whether night mode is active
+  uint32_t   last_seen_date;  // yyyymmdd (e.g. 20261116) for date-changed detection
 };
 
 /**

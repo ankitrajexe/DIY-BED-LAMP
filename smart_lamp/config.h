@@ -67,6 +67,9 @@ constexpr uint32_t OLED_SLEEP_MS            = 10000;   // 10 s inactivity timeou
 constexpr uint32_t PIXEL_SHIFT_INTERVAL_MS  = 60000;   // 60 s burn-in protection shift interval (lower to test)
 constexpr uint8_t  OLED_CONTRAST_DAY        = 128;     // Daytime display contrast (0..255)
 
+// RTC DS3231 settings (Step 8)
+constexpr uint32_t RTC_LOG_INTERVAL_MS      = 10000;   // 10 s periodic timestamp log interval
+
 // GPIO pin assignments (ESP32-C3 SuperMini)
 // Never use GPIO8 and GPIO9 (strapping pins).
 constexpr uint8_t LED_WARM_PIN = 0;  // GPIO0: warm channel MOSFET gate (PWM)

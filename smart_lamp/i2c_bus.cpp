@@ -12,3 +12,21 @@ void i2c_bus_init() {
                 I2C_SCL_PIN,
                 static_cast<unsigned long>(I2C_CLOCK_HZ));
 }
+
+void i2c_scan() {
+  Serial.println("[i2c] scanning bus (0x01 to 0x7E)...");
+  uint8_t count = 0;
+  for (uint8_t addr = 1; addr < 127; ++addr) {
+    Wire.beginTransmission(addr);
+    const uint8_t err = Wire.endTransmission();
+    if (err == 0) {
+      Serial.printf("[i2c] device found at 0x%02X\n", addr);
+      count++;
+    }
+  }
+  if (count == 0) {
+    Serial.println("[i2c] no devices found");
+  } else {
+    Serial.printf("[i2c] scan complete: %u device(s) found\n", count);
+  }
+}

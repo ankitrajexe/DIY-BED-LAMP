@@ -8,4 +8,10 @@
  */
 void i2c_bus_init();
 
+/**
+ * Scan the I2C bus and print every device address found.
+ * Helpful for verifying 0x3C (OLED), 0x57 (EEPROM), and 0x68 (DS3231).
+ */
+void i2c_scan();
+
 #endif  // I2C_BUS_H

@@ -22,108 +22,59 @@ bool s_rtcOk = false;
 // Timestamp of the last periodic serial log output (for 10 s logging)
 uint32_t s_lastLogMs = 0;
 
+}  // namespace
+
 // ---------------------------------------------------------------------------
 // Step 8 Serial test helper (remove in Step 19)
 // ---------------------------------------------------------------------------
 
-/**
- * Handle incoming test commands:
- *   "T YYYY-MM-DD HH:MM:SS" -> sets current time
- *   "i2c"                   -> scans I2C bus and prints all detected addresses
- */
-void handleRtcTestCommand(const char* rawCmd) {
-  // Trim leading whitespace
+bool rtc_handle_command(const char* rawCmd) {
   const char* cmd = rawCmd;
-  while (*cmd == ' ' || *cmd == '\t') {
+  while (*cmd != '\0' && isspace(static_cast<unsigned char>(*cmd))) {
     cmd++;
   }
 
-  // Command: "i2c"
-  if (strcasecmp(cmd, "i2c") == 0) {
-    i2c_scan();
-    return;
+  // Must start with 'T' or 't'
+  if (cmd[0] != 'T' && cmd[0] != 't') {
+    return false;
+  }
+  // Must be followed by whitespace or end of string
+  if (cmd[1] != ' ' && cmd[1] != '\t' && cmd[1] != '\0') {
+    return false;
   }
 
-  // Command: "T YYYY-MM-DD HH:MM:SS"
-  if (cmd[0] == 'T' || cmd[0] == 't') {
-    if (!s_rtcOk) {
-      Serial.println("[rtc] cannot set time: RTC hardware not detected");
-      return;
-    }
-
-    const char* args = cmd + 1;
-    while (*args == ' ' || *args == '\t') {
-      args++;
-    }
-
-    int y = 0, m = 0, d = 0, hr = 0, mn = 0, sc = 0;
-    // sscanf parses text into integers, similar to Python's int() after split()
-    const int matched = sscanf(args, "%d-%d-%d %d:%d:%d", &y, &m, &d, &hr, &mn, &sc);
-
-    // Validate date and time ranges
-    if (matched == 6 &&
-        y >= 2000 && y <= 2099 &&
-        m >= 1 && m <= 12 &&
-        d >= 1 && d <= 31 &&
-        hr >= 0 && hr <= 23 &&
-        mn >= 0 && mn <= 59 &&
-        sc >= 0 && sc <= 59) {
-      s_rtc.adjust(DateTime(y, m, d, hr, mn, sc));
-      Serial.printf("[rtc] time set: %04d-%02d-%02d %02d:%02d:%02d\n",
-                    y, m, d, hr, mn, sc);
-      // Immediately check if this manual adjustment triggered a date change
-      rtc_date_changed();
-    } else {
-      Serial.println("[rtc] invalid format (use: T YYYY-MM-DD HH:MM:SS)");
-    }
-    return;
+  if (!s_rtcOk) {
+    Serial.println("[rtc] cannot set time: RTC hardware not detected");
+    return true;
   }
 
-  Serial.println("[rtc] unknown command (use: T YYYY-MM-DD HH:MM:SS | i2c)");
+  const char* args = cmd + 1;
+  while (*args != '\0' && isspace(static_cast<unsigned char>(*args))) {
+    args++;
+  }
+
+  int y = 0, m = 0, d = 0, hr = 0, mn = 0, sc = 0;
+  // sscanf parses text into integers, ignoring any trailing whitespace or \r
+  const int matched = sscanf(args, "%d-%d-%d %d:%d:%d", &y, &m, &d, &hr, &mn, &sc);
+
+  // Validate date and time ranges
+  if (matched == 6 &&
+      y >= 2000 && y <= 2099 &&
+      m >= 1 && m <= 12 &&
+      d >= 1 && d <= 31 &&
+      hr >= 0 && hr <= 23 &&
+      mn >= 0 && mn <= 59 &&
+      sc >= 0 && sc <= 59) {
+    s_rtc.adjust(DateTime(y, m, d, hr, mn, sc));
+    Serial.printf("[rtc] time set: %04d-%02d-%02d %02d:%02d:%02d\n",
+                  y, m, d, hr, mn, sc);
+    // Immediately check if this manual adjustment triggered a date change
+    rtc_date_changed();
+  } else {
+    Serial.println("[rtc] invalid format (use: T YYYY-MM-DD HH:MM:SS)");
+  }
+  return true;
 }
-
-/**
- * Non-blocking serial listener for RTC and I2C commands.
- * Checks Serial.peek(). If the next character is 'T', 't', 'I', or 'i',
- * it reads and processes the line here. If not, it leaves the bytes in the
- * Serial buffer so other modules (fade, led) can handle them without conflicts!
- */
-void pollRtcSerialTest() {
-  static char buf[48];
-  static size_t pos = 0;
-  static bool readingCmd = false;
-
-  while (Serial.available() > 0) {
-    if (!readingCmd) {
-      const char next = static_cast<char>(Serial.peek());
-      if (next == 'T' || next == 't' || next == 'I' || next == 'i') {
-        readingCmd = true;
-      } else {
-        // Not for us; leave in buffer for fade/led modules
-        break;
-      }
-    }
-
-    const char ch = static_cast<char>(Serial.read());
-    if (ch == '\r' || ch == '\n') {
-      if (pos > 0) {
-        buf[pos] = '\0';
-        pos = 0;
-        readingCmd = false;
-        handleRtcTestCommand(buf);
-      } else {
-        readingCmd = false;
-      }
-      continue;
-    }
-
-    if (pos < sizeof(buf) - 1) {
-      buf[pos++] = ch;
-    }
-  }
-}
-
-}  // namespace
 
 void rtc_init() {
   // 1. Probe I2C bus at DS3231 address (0x68)
@@ -166,9 +117,6 @@ void rtc_init() {
 }
 
 void rtc_update() {
-  // Always poll for test commands
-  pollRtcSerialTest();
-
   // If RTC hardware was not detected, do nothing (fails gracefully)
   if (!s_rtcOk) {
     return;

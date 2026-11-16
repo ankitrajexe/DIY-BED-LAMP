@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <string.h>
 #include "config.h"
 
 void i2c_bus_init() {
@@ -29,4 +30,12 @@ void i2c_scan() {
   } else {
     Serial.printf("[i2c] scan complete: %u device(s) found\n", count);
   }
+}
+
+bool i2c_handle_command(const char* cmd) {
+  if (strcasecmp(cmd, "i2c") == 0) {
+    i2c_scan();
+    return true;
+  }
+  return false;
 }

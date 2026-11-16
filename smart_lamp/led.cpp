@@ -115,12 +115,14 @@ bool parseFloatArg(const char* str, float& out) {
   return true;
 }
 
-void handleCommand(const char* rawCmd) {
+}  // namespace
+
+bool led_handle_command(const char* rawCmd) {
   while (*rawCmd != '\0' && isspace(static_cast<unsigned char>(*rawCmd))) {
     ++rawCmd;
   }
   if (*rawCmd == '\0') {
-    return;
+    return false;
   }
 
   char cmd[LED_CMD_BUF_SIZE];
@@ -137,11 +139,11 @@ void handleCommand(const char* rawCmd) {
   if (strcmp(cmd, "off") == 0) {
     cancelSweep(false);
     led_set(0.0f, 0.0f);
-    return;
+    return true;
   }
   if (strcmp(cmd, "sweep") == 0) {
     startSweep();
-    return;
+    return true;
   }
   if (strcmp(cmd, "stop") == 0) {
     if (s_sweepState == SweepState::IDLE) {
@@ -149,15 +151,15 @@ void handleCommand(const char* rawCmd) {
     } else {
       cancelSweep(true);
     }
-    return;
+    return true;
   }
 
   if ((cmd[0] == 'w' || cmd[0] == 'c' || cmd[0] == 'b') &&
       isspace(static_cast<unsigned char>(cmd[1]))) {
     float value = 0.0f;
     if (!parseFloatArg(cmd + 1, value)) {
-      Serial.println("[led] invalid value");
-      return;
+      Serial.println("[led] invalid value (use: w <0..1>)");
+      return true;
     }
     cancelSweep(false);
     if (cmd[0] == 'w') {
@@ -167,48 +169,11 @@ void handleCommand(const char* rawCmd) {
     } else {
       led_set(value, value);
     }
-    return;
+    return true;
   }
 
-  Serial.println("[led] unknown cmd (use: w <v>, c <v>, b <v>, off, sweep, stop)");
+  return false;
 }
-
-void pollSerialCommands() {
-  static char buf[LED_CMD_BUF_SIZE];
-  static size_t pos = 0;
-  static bool overflow = false;
-
-  while (Serial.available() > 0) {
-    const char ch = static_cast<char>(Serial.read());
-    if (ch == '\r' || ch == '\n') {
-      if (overflow) {
-        Serial.println("[led] cmd too long");
-        overflow = false;
-        pos = 0;
-      } else if (pos > 0) {
-        buf[pos] = '\0';
-        pos = 0;
-        handleCommand(buf);
-      }
-      continue;
-    }
-    if (overflow) {
-      continue;
-    }
-    if (pos < (LED_CMD_BUF_SIZE - 1)) {
-      buf[pos++] = ch;
-    } else {
-      overflow = true;
-    }
-  }
-}
-
-void ledTestUpdate() {
-  pollSerialCommands();
-  updateSweep();
-}
-
-}  // namespace
 
 void led_init() {
   const bool warmOk = ledcAttach(LED_WARM_PIN, LED_PWM_FREQ_HZ, LED_PWM_RES_BITS);
@@ -245,5 +210,5 @@ void led_set(float warm, float cool) {
 }
 
 void led_update() {
-  ledTestUpdate();
+  updateSweep();
 }

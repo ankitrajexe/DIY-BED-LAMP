@@ -48,4 +48,11 @@ float fade_get_warm();
  */
 float fade_get_cool();
 
+/**
+ * Handle fade test commands ("f <warm> <cool> <ms>", "factory").
+ * Returns true if recognized, false otherwise.
+ * Remove in Step 19.
+ */
+bool fade_handle_command(const char* cmd);
+
 #endif  // FADE_H

@@ -14,4 +14,11 @@ void i2c_bus_init();
  */
 void i2c_scan();
 
+/**
+ * Handle I2C test command ("i2c").
+ * Returns true if recognized, false otherwise.
+ * Remove in Step 19.
+ */
+bool i2c_handle_command(const char* cmd);
+
 #endif  // I2C_BUS_H

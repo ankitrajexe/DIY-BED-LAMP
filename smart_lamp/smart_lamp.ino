@@ -12,6 +12,7 @@
 #include "settings.h"
 #include "storage.h"
 #include "touch.h"
+#include "serial_cmd.h"
 
 /**
  * Central initialization entry point called from setup().
@@ -57,4 +58,5 @@ void loop() {
   settings_update();
   storage_update();
   led_update();
+  serial_cmd_update();
 }

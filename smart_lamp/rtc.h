@@ -45,4 +45,11 @@ DateTime rtc_now();
  */
 bool rtc_date_changed();
 
+/**
+ * Handle RTC test command ("T YYYY-MM-DD HH:MM:SS" or lowercase "t").
+ * Returns true if recognized, false otherwise.
+ * Remove in Step 19.
+ */
+bool rtc_handle_command(const char* cmd);
+
 #endif  // RTC_H

@@ -50,81 +50,36 @@ float clamp01(float value) {
   return value;
 }
 
-// ---------------------------------------------------------------------------
-// Step 3 Serial test helper (remove in Step 19)
-// ---------------------------------------------------------------------------
-
-/**
- * Parse and execute test commands:
- *   "f <warm> <cool> <ms>" -> fades to targets over duration
- *   "factory"              -> clears flash settings and loads defaults (Step 6)
- */
-void handleFadeTestCommand(const char* cmd) {
-  // Check for Step 6 "factory" reset command
-  if (strcmp(cmd, "factory") == 0 || strncmp(cmd, "factory", 7) == 0) {
-    settings_factory_reset();
-    return;
-  }
-
-  float targetWarm = 0.0f;
-  float targetCool = 0.0f;
-  unsigned long duration = 0;
-
-  // sscanf parses formatted text, similar to Python's regex or str.split()
-  // cmd + 1 skips the initial letter 'f'
-  const int matched = sscanf(cmd + 1, "%f %f %lu", &targetWarm, &targetCool, &duration);
-  if (matched == 3) {
-    fade_to(targetWarm, targetCool, static_cast<uint32_t>(duration));
-  } else {
-    Serial.println("[fade] usage: f <warm 0..1> <cool 0..1> <ms> | factory");
-  }
-}
-
-/**
- * Non-blocking serial listener for fade test commands.
- * Checks the next character with Serial.peek() first. If it is 'f' or 'F',
- * we read and handle the line here. If not, we leave the bytes untouched
- * so Step 2's LED commands (w, c, b, off, sweep) can read them!
- */
-void pollSerialTest() {
-  static char buf[32];
-  static size_t pos = 0;
-  static bool readingFadeCmd = false;
-
-  while (Serial.available() > 0) {
-    // If we are not currently accumulating an 'f' command, peek at the next char
-    if (!readingFadeCmd) {
-      const char next = static_cast<char>(Serial.peek());
-      if (next == 'f' || next == 'F') {
-        readingFadeCmd = true;
-      } else {
-        // Not for us; leave in Serial buffer for led_update() to process
-        break;
-      }
-    }
-
-    // Read the character from the serial buffer
-    const char ch = static_cast<char>(Serial.read());
-    if (ch == '\r' || ch == '\n') {
-      if (pos > 0) {
-        buf[pos] = '\0';
-        pos = 0;
-        readingFadeCmd = false;
-        handleFadeTestCommand(buf);
-      } else {
-        readingFadeCmd = false;
-      }
-      continue;
-    }
-
-    // Append character to our line buffer with overflow protection
-    if (pos < sizeof(buf) - 1) {
-      buf[pos++] = ch;
-    }
-  }
-}
-
 }  // namespace
+
+// ---------------------------------------------------------------------------
+// Step 3 & Step 6 Serial test helper (remove in Step 19)
+// ---------------------------------------------------------------------------
+
+bool fade_handle_command(const char* cmd) {
+  // Check for Step 6 "factory" reset command
+  if (strcmp(cmd, "factory") == 0) {
+    settings_factory_reset();
+    return true;
+  }
+
+  // Check for Step 3 fade command: "f <warm> <cool> <ms>" (or "F ...")
+  if ((cmd[0] == 'f' || cmd[0] == 'F') && (cmd[1] == ' ' || cmd[1] == '\t')) {
+    float targetWarm = 0.0f;
+    float targetCool = 0.0f;
+    unsigned long duration = 0;
+
+    const int matched = sscanf(cmd + 1, "%f %f %lu", &targetWarm, &targetCool, &duration);
+    if (matched == 3) {
+      fade_to(targetWarm, targetCool, static_cast<uint32_t>(duration));
+    } else {
+      Serial.println("[fade] usage: f <warm 0..1> <cool 0..1> <ms>");
+    }
+    return true;
+  }
+
+  return false;
+}
 
 void fade_init() {
   s_currentWarm = 0.0f;
@@ -190,9 +145,6 @@ void fade_to(float targetWarm, float targetCool, uint32_t durationMs) {
 }
 
 void fade_update() {
-  // Always poll for serial test commands (non-blocking)
-  pollSerialTest();
-
   // If no transition is running, nothing else to do
   if (!s_fadeActive) {
     return;
